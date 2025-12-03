@@ -269,7 +269,6 @@
                                                     $isImage = Str::startsWith($document->file_type, 'image/');
                                                     $isPdf = $document->file_type === 'application/pdf';
                                                     $previewUrl = route('companies.investigation-documents.preview', [$company, $document]);
-                                                    $previewType = $isImage ? 'image' : ($isPdf ? 'pdf' : '');
                                                 @endphp
                                                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
                                                     <div class="flex items-start justify-between mb-2">
@@ -287,10 +286,9 @@
                                                     </div>
                                                     <div class="flex items-center gap-2 mt-3">
                                                         @if($isImage || $isPdf)
-                                                            <button
-                                                                type="button"
-                                                                x-data
-                                                                x-on:click="window.openDocumentPreview('{{ $previewUrl }}', '{{ $previewType }}', '{{ $document->file_name }}')"
+                                                            <a
+                                                                href="{{ $previewUrl }}"
+                                                                target="_blank"
                                                                 class="inline-flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors duration-150 text-xs"
                                                             >
                                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,7 +296,7 @@
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                                 </svg>
                                                                 内容確認
-                                                            </button>
+                                                            </a>
                                                         @endif
                                                         <a 
                                                             href="{{ route('companies.investigation-documents.download', [$company, $document]) }}"
@@ -391,108 +389,5 @@
         </div>
     </x-modal>
 
-    <!-- ドキュメントプレビューモーダル -->
-    <div
-        x-data="{ 
-            open: false, 
-            src: '', 
-            type: '', 
-            fileName: '',
-            close() {
-                this.open = false;
-                this.src = '';
-                this.type = '';
-                this.fileName = '';
-            }
-        }"
-        x-on:open-document-preview.window="
-            open = true;
-            src = $event.detail.src;
-            type = $event.detail.type;
-            fileName = $event.detail.fileName;
-        "
-        x-show="open"
-        x-cloak
-        class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
-        style="display: none;"
-    >
-        <!-- オーバーレイ -->
-        <div
-            x-show="open"
-            x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="ease-in duration-200"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="fixed inset-0 transform transition-all"
-            x-on:click="close()"
-        >
-            <div class="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
-        </div>
-
-        <!-- モーダルコンテンツ -->
-        <div
-            x-show="open"
-            x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave="ease-in duration-200"
-            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="mb-6 bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-5xl sm:mx-auto"
-        >
-            <div class="flex flex-col max-h-[90vh]">
-                <!-- ヘッダー -->
-                <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate" x-text="fileName">
-                    </h2>
-                    <div class="flex items-center gap-2">
-                        <a 
-                            :href="src" 
-                            target="_blank"
-                            class="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-150 text-sm"
-                        >
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                            </svg>
-                            別タブで開く
-                        </a>
-                        <button
-                            type="button"
-                            x-on:click="close()"
-                            class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <!-- コンテンツ -->
-                <div class="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-gray-700">
-                    <!-- 画像プレビュー -->
-                    <template x-if="type === 'image'">
-                        <div class="flex items-center justify-center min-h-[60vh]">
-                            <img :src="src" :alt="fileName" class="max-w-full max-h-[75vh] object-contain rounded shadow-lg" />
-                        </div>
-                    </template>
-                    <!-- PDFプレビュー -->
-                    <template x-if="type === 'pdf'">
-                        <iframe :src="src" class="w-full h-[75vh] rounded shadow-lg" frameborder="0"></iframe>
-                    </template>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // グローバル関数としてドキュメントプレビューを開く
-        window.openDocumentPreview = function(src, type, fileName) {
-            window.dispatchEvent(new CustomEvent('open-document-preview', {
-                detail: { src, type, fileName }
-            }));
-        };
-    </script>
 </x-app-layout>
 
