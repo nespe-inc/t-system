@@ -265,7 +265,57 @@
                                         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">アップロード済み調査表</h4>
                                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             @foreach($documents as $document)
+                                                @php
+                                                    $isImage = Str::startsWith($document->file_type, 'image/');
+                                                    $isPdf = $document->file_type === 'application/pdf';
+                                                    $previewUrl = Storage::url($document->file_path);
+                                                @endphp
                                                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                                    <!-- プレビュー表示エリア -->
+                                                    @if($isImage)
+                                                        <button
+                                                            type="button"
+                                                            x-data
+                                                            x-on:click="window.openDocumentPreview('{{ $previewUrl }}', 'image', '{{ $document->file_name }}')"
+                                                            class="block w-full mb-3 cursor-pointer group"
+                                                        >
+                                                            <div class="relative bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                                                                <img 
+                                                                    src="{{ $previewUrl }}" 
+                                                                    alt="{{ $document->file_name }}"
+                                                                    class="w-full h-32 object-contain"
+                                                                >
+                                                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                                                                    <span class="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-sm font-medium">
+                                                                        クリックで拡大
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    @elseif($isPdf)
+                                                        <button
+                                                            type="button"
+                                                            x-data
+                                                            x-on:click="window.openDocumentPreview('{{ $previewUrl }}', 'pdf', '{{ $document->file_name }}')"
+                                                            class="block w-full mb-3 cursor-pointer group"
+                                                        >
+                                                            <div class="relative bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden h-32 flex items-center justify-center">
+                                                                <div class="text-center">
+                                                                    <svg class="w-12 h-12 mx-auto text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
+                                                                        <path d="M8 12h8v2H8zm0 4h8v2H8z"/>
+                                                                    </svg>
+                                                                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">PDF</span>
+                                                                </div>
+                                                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                                                                    <span class="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-sm font-medium">
+                                                                        クリックでプレビュー
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    @endif
+
                                                     <div class="flex items-start justify-between mb-2">
                                                         <div class="flex-1 min-w-0">
                                                             <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate" title="{{ $document->file_name }}">
@@ -370,5 +420,109 @@
             </div>
         </div>
     </x-modal>
+
+    <!-- ドキュメントプレビューモーダル -->
+    <div
+        x-data="{ 
+            open: false, 
+            src: '', 
+            type: '', 
+            fileName: '',
+            close() {
+                this.open = false;
+                this.src = '';
+                this.type = '';
+                this.fileName = '';
+            }
+        }"
+        x-on:open-document-preview.window="
+            open = true;
+            src = $event.detail.src;
+            type = $event.detail.type;
+            fileName = $event.detail.fileName;
+        "
+        x-show="open"
+        x-cloak
+        class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
+        style="display: none;"
+    >
+        <!-- オーバーレイ -->
+        <div
+            x-show="open"
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 transform transition-all"
+            x-on:click="close()"
+        >
+            <div class="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
+        </div>
+
+        <!-- モーダルコンテンツ -->
+        <div
+            x-show="open"
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+            x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            class="mb-6 bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:max-w-5xl sm:mx-auto"
+        >
+            <div class="flex flex-col max-h-[90vh]">
+                <!-- ヘッダー -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate" x-text="fileName">
+                    </h2>
+                    <div class="flex items-center gap-2">
+                        <a 
+                            :href="src" 
+                            target="_blank"
+                            class="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-150 text-sm"
+                        >
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                            別タブで開く
+                        </a>
+                        <button
+                            type="button"
+                            x-on:click="close()"
+                            class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <!-- コンテンツ -->
+                <div class="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-gray-700">
+                    <!-- 画像プレビュー -->
+                    <template x-if="type === 'image'">
+                        <div class="flex items-center justify-center min-h-[60vh]">
+                            <img :src="src" :alt="fileName" class="max-w-full max-h-[75vh] object-contain rounded shadow-lg" />
+                        </div>
+                    </template>
+                    <!-- PDFプレビュー -->
+                    <template x-if="type === 'pdf'">
+                        <iframe :src="src" class="w-full h-[75vh] rounded shadow-lg" frameborder="0"></iframe>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // グローバル関数としてドキュメントプレビューを開く
+        window.openDocumentPreview = function(src, type, fileName) {
+            window.dispatchEvent(new CustomEvent('open-document-preview', {
+                detail: { src, type, fileName }
+            }));
+        };
+    </script>
 </x-app-layout>
 
