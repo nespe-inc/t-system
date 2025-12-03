@@ -206,6 +206,7 @@
                                 </tbody>
                             </table>
                             </div>
+                            </div>
                             
                             <!-- 過去の調査一覧 -->
                             <div :class="activeTab === 'past' ? '' : 'hidden'">
@@ -264,6 +265,11 @@
                                         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">アップロード済み調査表</h4>
                                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             @foreach($documents as $document)
+                                                @php
+                                                    $isImage = Str::startsWith($document->file_type, 'image/');
+                                                    $isPdf = $document->file_type === 'application/pdf';
+                                                    $previewUrl = route('companies.investigation-documents.preview', [$company, $document]);
+                                                @endphp
                                                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
                                                     <div class="flex items-start justify-between mb-2">
                                                         <div class="flex-1 min-w-0">
@@ -279,6 +285,19 @@
                                                         </div>
                                                     </div>
                                                     <div class="flex items-center gap-2 mt-3">
+                                                        @if($isImage || $isPdf)
+                                                            <a
+                                                                href="{{ $previewUrl }}"
+                                                                target="_blank"
+                                                                class="inline-flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors duration-150 text-xs"
+                                                            >
+                                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                                </svg>
+                                                                内容確認
+                                                            </a>
+                                                        @endif
                                                         <a 
                                                             href="{{ route('companies.investigation-documents.download', [$company, $document]) }}"
                                                             class="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-150 text-xs"
@@ -369,5 +388,6 @@
             </div>
         </div>
     </x-modal>
+
 </x-app-layout>
 
