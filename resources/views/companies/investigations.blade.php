@@ -269,53 +269,9 @@
                                                     $isImage = Str::startsWith($document->file_type, 'image/');
                                                     $isPdf = $document->file_type === 'application/pdf';
                                                     $previewUrl = route('companies.investigation-documents.preview', [$company, $document]);
+                                                    $previewType = $isImage ? 'image' : ($isPdf ? 'pdf' : '');
                                                 @endphp
                                                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                                    <!-- プレビュー表示エリア -->
-                                                    @if($isImage)
-                                                        <button
-                                                            type="button"
-                                                            x-data
-                                                            x-on:click="window.openDocumentPreview('{{ $previewUrl }}', 'image', '{{ $document->file_name }}')"
-                                                            class="block w-full mb-3 cursor-pointer group"
-                                                        >
-                                                            <div class="relative bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                                                                <img 
-                                                                    src="{{ $previewUrl }}" 
-                                                                    alt="{{ $document->file_name }}"
-                                                                    class="w-full h-32 object-contain"
-                                                                >
-                                                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                                                                    <span class="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-sm font-medium">
-                                                                        クリックで拡大
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </button>
-                                                    @elseif($isPdf)
-                                                        <button
-                                                            type="button"
-                                                            x-data
-                                                            x-on:click="window.openDocumentPreview('{{ $previewUrl }}', 'pdf', '{{ $document->file_name }}')"
-                                                            class="block w-full mb-3 cursor-pointer group"
-                                                        >
-                                                            <div class="relative bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden h-32 flex items-center justify-center">
-                                                                <div class="text-center">
-                                                                    <svg class="w-12 h-12 mx-auto text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
-                                                                        <path d="M8 12h8v2H8zm0 4h8v2H8z"/>
-                                                                    </svg>
-                                                                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">PDF</span>
-                                                                </div>
-                                                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                                                                    <span class="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-sm font-medium">
-                                                                        クリックでプレビュー
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </button>
-                                                    @endif
-
                                                     <div class="flex items-start justify-between mb-2">
                                                         <div class="flex-1 min-w-0">
                                                             <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate" title="{{ $document->file_name }}">
@@ -330,6 +286,20 @@
                                                         </div>
                                                     </div>
                                                     <div class="flex items-center gap-2 mt-3">
+                                                        @if($isImage || $isPdf)
+                                                            <button
+                                                                type="button"
+                                                                x-data
+                                                                x-on:click="window.openDocumentPreview('{{ $previewUrl }}', '{{ $previewType }}', '{{ $document->file_name }}')"
+                                                                class="inline-flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors duration-150 text-xs"
+                                                            >
+                                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                                </svg>
+                                                                内容確認
+                                                            </button>
+                                                        @endif
                                                         <a 
                                                             href="{{ route('companies.investigation-documents.download', [$company, $document]) }}"
                                                             class="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-150 text-xs"
