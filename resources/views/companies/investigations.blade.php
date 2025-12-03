@@ -206,6 +206,7 @@
                                 </tbody>
                             </table>
                             </div>
+                            </div>
                             
                             <!-- 過去の調査一覧 -->
                             <div :class="activeTab === 'past' ? '' : 'hidden'">
