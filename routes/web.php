@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('companies/{company}/investigations/{investigation}', [CompanyController::class, 'destroyInvestigation'])->name('companies.investigations.destroy');
     Route::post('companies/{company}/investigation-documents', [CompanyController::class, 'uploadDocument'])->name('companies.investigation-documents.upload');
     Route::get('companies/{company}/investigation-documents/{document}/download', [CompanyController::class, 'downloadDocument'])->name('companies.investigation-documents.download');
+    Route::get('companies/{company}/investigation-documents/{document}/preview', [CompanyController::class, 'previewDocument'])->name('companies.investigation-documents.preview');
     Route::delete('companies/{company}/investigation-documents/{document}', [CompanyController::class, 'deleteDocument'])->name('companies.investigation-documents.delete');
     
     Route::get('masters', [MasterController::class, 'index'])->name('masters.index');

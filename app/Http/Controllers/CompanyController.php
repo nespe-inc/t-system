@@ -381,6 +381,27 @@ class CompanyController extends Controller
     }
 
     /**
+     * Preview investigation document (inline display).
+     */
+    public function previewDocument(Company $company, InvestigationDocument $document)
+    {
+        if ($document->company_id !== $company->id) {
+            abort(403);
+        }
+
+        if (!Storage::disk('public')->exists($document->file_path)) {
+            abort(404);
+        }
+
+        $file = Storage::disk('public')->get($document->file_path);
+        $mimeType = $document->file_type;
+
+        return response($file, 200)
+            ->header('Content-Type', $mimeType)
+            ->header('Content-Disposition', 'inline; filename="' . $document->file_name . '"');
+    }
+
+    /**
      * Delete investigation document.
      */
     public function deleteDocument(Company $company, InvestigationDocument $document): RedirectResponse
